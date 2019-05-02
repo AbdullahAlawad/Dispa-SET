@@ -1,29 +1,29 @@
-dispaset.misc package
+DispaSET.misc package
 =====================
 
 Submodules
 ----------
 
-dispaset.misc.colorstreamhandler module
+DispaSET.misc.colorstreamhandler module
 ---------------------------------------
 
-.. automodule:: dispaset.misc.colorstreamhandler
+.. automodule:: DispaSET.misc.colorstreamhandler
     :members:
     :undoc-members:
     :show-inheritance:
 
-dispaset.misc.gdx_handler module
+DispaSET.misc.gdx_handler module
 --------------------------------
 
-.. automodule:: dispaset.misc.gdx_handler
+.. automodule:: DispaSET.misc.gdx_handler
     :members:
     :undoc-members:
     :show-inheritance:
 
-dispaset.misc.str_handler module
+DispaSET.misc.str_handler module
 --------------------------------
 
-.. automodule:: dispaset.misc.str_handler
+.. automodule:: DispaSET.misc.str_handler
     :members:
     :undoc-members:
     :show-inheritance:
@@ -32,7 +32,7 @@ dispaset.misc.str_handler module
 Module contents
 ---------------
 
-.. automodule:: dispaset.misc
+.. automodule:: DispaSET.misc
     :members:
     :undoc-members:
     :show-inheritance:

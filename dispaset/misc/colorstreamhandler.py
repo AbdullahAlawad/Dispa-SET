@@ -4,7 +4,7 @@
 # http://stackoverflow.com/questions/384076/how-can-i-color-python-logging-output/1336640#1336640
 
 # how to use:
-# I used a dict-based logging configuration, not sure what else would work.
+# i used a dict-based logging configuration, not sure what else would work.
 #
 # import logging, logging.config, colorstreamhandler
 #
@@ -66,11 +66,6 @@ class _AnsiColorStreamHandler(logging.StreamHandler):
     INFO = GREEN
     DEBUG = CYAN
 
-    @property
-    def is_tty(self):
-        isatty = getattr(self.stream, 'isatty', None)
-        return isatty and isatty()
-
     @classmethod
     def _get_color(cls, level):
         if level >= logging.CRITICAL:
@@ -92,10 +87,7 @@ class _AnsiColorStreamHandler(logging.StreamHandler):
     def format(self, record):
         text = logging.StreamHandler.format(self, record)
         color = self._get_color(record.levelno)
-        if self.is_tty:
-            return color + text + self.DEFAULT
-        else:
-            return text
+        return color + text + self.DEFAULT
 
 
 class _WinColorStreamHandler(logging.StreamHandler):

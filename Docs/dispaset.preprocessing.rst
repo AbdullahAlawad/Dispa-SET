@@ -1,37 +1,37 @@
-dispaset.preprocessing package
+DispaSET.preprocessing package
 ==============================
 
 Submodules
 ----------
 
-dispaset.preprocessing.data_check module
+DispaSET.preprocessing.data_check module
 ----------------------------------------
 
-.. automodule:: dispaset.preprocessing.data_check
+.. automodule:: DispaSET.preprocessing.data_check
     :members:
     :undoc-members:
     :show-inheritance:
 
-dispaset.preprocessing.data_handler module
+DispaSET.preprocessing.data_handler module
 ------------------------------------------
 
-.. automodule:: dispaset.preprocessing.data_handler
+.. automodule:: DispaSET.preprocessing.data_handler
     :members:
     :undoc-members:
     :show-inheritance:
 
-dispaset.preprocessing.preprocessing module
+DispaSET.preprocessing.preprocessing module
 -------------------------------------------
 
-.. automodule:: dispaset.preprocessing.preprocessing
+.. automodule:: DispaSET.preprocessing.preprocessing
     :members:
     :undoc-members:
     :show-inheritance:
 
-dispaset.preprocessing.utils module
+DispaSET.preprocessing.utils module
 -----------------------------------
 
-.. automodule:: dispaset.preprocessing.utils
+.. automodule:: DispaSET.preprocessing.utils
     :members:
     :undoc-members:
     :show-inheritance:
@@ -40,7 +40,7 @@ dispaset.preprocessing.utils module
 Module contents
 ---------------
 
-.. automodule:: dispaset.preprocessing
+.. automodule:: DispaSET.preprocessing
     :members:
     :undoc-members:
     :show-inheritance:

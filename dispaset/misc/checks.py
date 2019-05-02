@@ -18,6 +18,7 @@ def get_gams_path():
 
     Currently works for Windows, Linux and OSX. More searching rules and patterns should be added in the future
     """
+    import subprocess
     out = ''
     if sys.platform == 'linux2':
         try:
@@ -83,14 +84,14 @@ def get_gams_path():
 
 
 def cmd_exists(cmd):
-    return subprocess.call("type " + cmd, shell=True,
+    return subprocess.call("type " + cmd, shell=True, 
         stdout=subprocess.PIPE, stderr=subprocess.PIPE) == 0
 
 
 
-
-# ## First check logging:
-
+'''
+First check logging:
+'''
 print('CHECK LOGGING')
 import logging
 import logging.config
@@ -107,7 +108,7 @@ _LOGCONFIG = {
         'notime': {
             'format': '[%(levelname)-8s] (%(funcName)s): %(message)s',
             'datefmt': '%y/%m/%d %H:%M:%S'
-        },
+        },                
      },
      "handlers": {
          "console": {
@@ -142,7 +143,7 @@ try:
     logging.critical('This is critical')
     logging.error('This is an error')
     print('Logging seems to be fine')
-except Exception as e:
+except Exception, e:
     print('Logging cannot be handled. The following error msg was generated:')
     print(e)
 
@@ -155,7 +156,7 @@ print('\n \nCHECK THE GDXCC LIBRARY')
 success_gdxcc = True
 try:
     import gdxcc
-except ImportError as e:
+except Exception, e:
     if str(e) == 'No module named gdxcc':
         print('Could not find the gdxcc library in the standard python PATH. Trying to import the pre-compiled libraries')
         path_script = os.path.dirname(__file__)
@@ -182,7 +183,7 @@ except ImportError as e:
             sys.path.append(path)
         try:
             import gdxcc
-        except ImportError as ee:
+        except ImportError, ee:
             print('ERROR: Could not load the precompiled gdxcc library. The following error was issued: ' + str(ee))
             success_gdxcc = False
     else:
@@ -193,15 +194,23 @@ if success_gdxcc:
 
 
 
-# ## Check the gams library:
 
+
+
+
+
+
+
+'''
+Check the gams library:
+'''
 print('\n \nCHECK GAMS library')
 success_lib = True
 success_path = True
 success_sim = True
 try:
     import gams
-except Exception as e:
+except Exception, e:
     if str(e) == 'No module named gams':
         print('Could not find the gams library in the standard python PATH. Trying to import the pre-compiled libraries')
         path_script = os.path.dirname(__file__)
@@ -217,7 +226,7 @@ except Exception as e:
             sys.path.append(path)
         try:
             import gams
-        except ImportError as ee:
+        except ImportError, ee:
             print('ERROR: Could not load the precompiled gams library. The following error was issued: ' + str(ee))
             success_lib = False
     else:
@@ -248,9 +257,9 @@ if success_path and success_lib:
         t1 = ws.add_job_from_file("trnsport.gms")
         t1.run()
         for rec in t1.out_db["x"]:
-            print ("x(" + rec.keys[0] + "," + rec.keys[1] + "): level=" + str(rec.level) + " marginal=" + str(rec.marginal))
+            print "x(" + rec.keys[0] + "," + rec.keys[1] + "): level=" + str(rec.level) + " marginal=" + str(rec.marginal)
         print('The optimization seems to have run properly')
-    except Exception as e:
+    except Exception, e:
         print('ERROR while trying to run the optimization: ' + str(e))
         success_sim = False
 
@@ -277,12 +286,12 @@ if success_gdxcc and success_path:
     
         try:
             success = gdxcc.gdxDataWriteStr(gdxHandle, keys, gdxValues)
-        except Exception as e:
+        except Exception, e:
             success = False
             print('ERROR: the set could not be written to the gdx file. Error msg: ' + str(e))
         gdxcc.gdxDataWriteDone(gdxHandle)
         gdxcc.gdxClose(gdxHandle)
-    except Exception as ee:
+    except Exception, ee:
         print('ERROR: the gdxfile could not be created. Error msg: ' + str(ee))
         success = False
     if success and os.path.isfile('test.gdx'):
@@ -296,8 +305,10 @@ print('\n \nCHECK PYOMO')
 try:
     import pyomo
     print('Pyomo is available')
-except ImportError as e:
+except Exception, e:
     print('ERROR: Pyomo could not be load. Erros msg: ' + str(e))
+    
+    
 
 
 print('\n \nCHECK CPLEX')

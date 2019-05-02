@@ -1,13 +1,13 @@
-dispaset.postprocessing package
+DispaSET.postprocessing package
 ===============================
 
 Submodules
 ----------
 
-dispaset.postprocessing.postprocessing module
+DispaSET.postprocessing.postprocessing module
 ---------------------------------------------
 
-.. automodule:: dispaset.postprocessing.postprocessing
+.. automodule:: DispaSET.postprocessing.postprocessing
     :members:
     :undoc-members:
     :show-inheritance:
@@ -16,7 +16,7 @@ dispaset.postprocessing.postprocessing module
 Module contents
 ---------------
 
-.. automodule:: dispaset.postprocessing
+.. automodule:: DispaSET.postprocessing
     :members:
     :undoc-members:
     :show-inheritance:

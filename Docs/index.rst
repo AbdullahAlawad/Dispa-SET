@@ -38,11 +38,11 @@ http://www.dispaset.eu/latest/index.html
 Main contributors:
 ------------------
 
-* `Sylvain Quoilin`_ (KU Leuven, Belgium)) 
+* `Sylvain Quoilin`_ (University of Liège, Belgium)) 
 
 * Konstantinos Kavvadias  (Joint Research Centre, EU Commission)
 
-* Matija Pavičević  (KU Leuven, Belgium)
+* Andreas Zucker (Joint Research Centre, EU Commission)
 
 
 Contents
@@ -58,9 +58,8 @@ Contents
    formulations
    implementation
    data
-   cases
    developers
-   dispaset
+   DispaSET
 
 
 Indices and tables
