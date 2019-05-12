@@ -27,7 +27,7 @@ GMS_FOLDER = os.path.join(os.path.dirname(__file__), '..', 'GAMS')
 
 
 
-def build_simulation(config, plot_load=False, PercentLocalSubsidy=1, PercentExportCost=1):
+def build_simulation(config, plot_load=False, LocalSubsidyMultiplier=1, ExportCostMultiplier=1):
     """
     This function reads the DispaSET config, loads the specified data,
     processes it when needed, and formats it in the proper DispaSET format.
@@ -57,16 +57,16 @@ def build_simulation(config, plot_load=False, PercentLocalSubsidy=1, PercentExpo
     # Timestep
     TimeStep = '1h'
 
-    # DispaSET technologies:  ####### Edits #######
+    # DispaSET technologies:
     Technologies = ['COMC', 'GTUR', 'HDAM', 'HROR', 'HPHS', 'ICEN', 'PHOT', 'STUR', 'WTOF', 'WTON', 'CAES', 'BATS',
                     'BEVS', 'THMS', 'P2GS','CSP','CPV','LFGG']
-    # List of renewable technologies:  ####### Edits #######
+    # List of renewable technologies:
     List_tech_renewables = ['WTON', 'WTOF', 'PHOT', 'HROR','CSP','CPV','LFGG']
     # List of storage technologies:
     List_tech_storage = ['HDAM', 'HPHS', 'BATS', 'BEVS', 'CAES', 'THMS']
     # List of CHP types:§
     List_types_CHP = ['extraction','back-pressure', 'p2h']
-    # DispaSET fuels:  ####### Edits #######
+    # DispaSET fuels:
     Fuels = ['BIO', 'GAS', 'HRD', 'LIG', 'NUC', 'OIL', 'PEA', 'SUN', 'WAT', 'WIN', 'WST', 'OTH', 'DSL', 'HFO','MSW','LFG']
 
     # Indexes of the simualtion:
@@ -87,8 +87,6 @@ def build_simulation(config, plot_load=False, PercentLocalSubsidy=1, PercentExpo
     # Defining missing configuration fields for backwards compatibility:
     if not isinstance(config['default']['CostLoadShedding'],(float,int,long)):
         config['default']['CostLoadShedding'] = 1000
-    #if not isinstance(config['default']['CostHeatSlack'],(float,int,long)):
-    #    config['default']['CostHeatSlack'] = 50
 
     # Load :
     Load = NodeBasedTable(config['Demand'],idx_utc_noloc,config['zones'],tablename='Demand')
@@ -132,20 +130,10 @@ def build_simulation(config, plot_load=False, PercentLocalSubsidy=1, PercentExpo
 
     Outages = UnitBasedTable(plants,config['Outages'],idx_utc_noloc,config['zones'],fallbacks=['Unit','Technology'],tablename='Outages')
     AF = UnitBasedTable(plants,config['RenewablesAF'],idx_utc_noloc,config['zones'],fallbacks=['Unit','Technology'],tablename='AvailabilityFactors',default=1)
-    '''####### Edits #######
-    ReservoirLevels = UnitBasedTable(plants_sto,config['ReservoirLevels'],idx_utc_noloc,config['zones'],fallbacks=['Unit','Technology'],tablename='ReservoirLevels',default=0)
-    ReservoirScaledInflows = UnitBasedTable(plants_sto,config['ReservoirScaledInflows'],idx_utc_noloc,config['zones'],fallbacks=['Unit','Technology'],tablename='ReservoirScaledInflows',default=0)
-    HeatDemand = UnitBasedTable(plants_chp,config['HeatDemand'],idx_utc_noloc,config['zones'],fallbacks=['Unit'],tablename='HeatDemand',default=0)
-    CostHeatSlack = UnitBasedTable(plants_chp,config['CostHeatSlack'],idx_utc_noloc,config['zones'],fallbacks=['Unit','Zone'],tablename='CostHeatSlack',default=config['default']['CostHeatSlack'])
-    '''
 
     # data checks:
     check_AvailabilityFactors(plants,AF)
-    ''' ####### Edits #######
-    check_heat_demand(plants,HeatDemand)
-    '''
 
-    ####### Edits #######
     FuelPricesPerZone = load_csv(config['FuelsPricesPerZone'], header=0, index_col=0)
     FuelEntries = {'PriceOfBiomass':'BIO', 'PriceOfGas':'GAS', 'PriceOfBlackCoal':'HRD', 'PriceOfLignite':'LIG',
                     'PriceOfNuclear':'NUC', 'PriceOfCrudeOil':'OIL', 'PriceOfPeat':'PEA', 'PriceOfDiesel':'DSL',
@@ -178,7 +166,7 @@ def build_simulation(config, plot_load=False, PercentLocalSubsidy=1, PercentExpo
                     try:
                         if isinstance(FuelPricesPerZone[zone][FuelEntries[fuel]], (int, long, float, complex)) and FuelPricesPerZone[zone][FuelEntries[fuel]] > 0:
                             FuelPricesPerZone[zone][FuelEntries[fuel]] = FuelPricesPerZone['International'][FuelEntries[fuel]] - (FuelPricesPerZone['International'][FuelEntries[fuel]]
-                                                                        - FuelPricesPerZone[zone][FuelEntries[fuel]]) * PercentLocalSubsidy
+                                                                        - FuelPricesPerZone[zone][FuelEntries[fuel]]) * LocalSubsidyMultiplier
                             vals[(zone, fuel)] = [FuelPricesPerZone[zone][FuelEntries[fuel]]] * len(idx_utc_noloc)
                     except:
                         if isinstance(config['default'][fuel], (int, long, float, complex)):
@@ -190,7 +178,7 @@ def build_simulation(config, plot_load=False, PercentLocalSubsidy=1, PercentExpo
                     #logging.warn('No data file found for ' + fuel + ' in the zone ' + zone + '. Using default value ' + str(config['default'][fuel]) + ' EUR')
                     if isinstance(FuelPricesPerZone[zone][FuelEntries[fuel]], (int, long, float, complex)) and FuelPricesPerZone[zone][FuelEntries[fuel]] > 0:
                         FuelPricesPerZone[zone][FuelEntries[fuel]] = FuelPricesPerZone['International'][FuelEntries[fuel]] - (FuelPricesPerZone['International'][FuelEntries[fuel]]
-                                                                    - FuelPricesPerZone[zone][FuelEntries[fuel]]) * PercentLocalSubsidy
+                                                                    - FuelPricesPerZone[zone][FuelEntries[fuel]]) * LocalSubsidyMultiplier
                         vals[(zone, fuel)] = [FuelPricesPerZone[zone][FuelEntries[fuel]]] * len(idx_utc_noloc)
                 except:
                     vals[(zone, fuel)] = [config['default'][fuel]] * len(idx_utc_noloc)
@@ -206,55 +194,7 @@ def build_simulation(config, plot_load=False, PercentLocalSubsidy=1, PercentExpo
             vals[(zone, fuel)][idx[idx_utc_noloc]] = [0] * len(idx_utc_noloc)
     FuelPrices = pd.DataFrame(vals, index=idx_utc_noloc)
     logging.info("Time to create Fuel Prices 1 Dataframe: {}s".format(tm.time() - tc))
-    '''
-    fuel_series = list(fuels*len(config['zones']))
-    zone_series = []
-    for zone in config['zones']:
-        zone_series = zone_series+[zone]*len(fuels)
-    zonefuels_array = [zone_series, fuel_series]
-    #FuelPrices = pd.DataFrame(columns=zonefuels_array, index=idx_utc_noloc)
-    #FuelPrices = pd.DataFrame(columns=fuels, index=idx_utc_noloc)
-    idx = pd.IndexSlice
-    FirstCell = 'Initially String'
-    vals={}   
-    for zone in config['zones']:
-        for fuel in fuels:
-            vals[(zone, fuel)] = {}
-            try:
-                tmp = load_csv(config[fuel], header=0, index_col=0, parse_dates=True)
-                FirstCell = float(tmp.columns[0])
-            except:
-                #logging.warning('No data file found for  ' + fuel+ 'in the zone '+ zone)
-                FirstCell = 'String'
-            if os.path.isfile(config[fuel]) and isinstance(FirstCell, float):
-                tmp2 = load_csv(config[fuel], header=None, index_col=0, parse_dates=True)
-                vals[(zone, fuel)] = tmp2[1][idx_utc_noloc].values
-                #FuelPrices.loc[idx[idx_utc_noloc], idx[zone, fuel]] = tmp2[1][idx_utc_noloc].values
-            elif os.path.isfile(config[fuel]) and zone in tmp.columns:
-                vals[(zone, fuel)] = tmp[zone][idx_utc_noloc].values
-                print 'BB'
-                #FuelPrices.loc[idx[idx_utc_noloc], idx[zone, fuel]] = tmp[zone][idx_utc_noloc].values
-            # FIXME: IF single column and column names are not defined, assign these values to all
-            # FIXME: Currently the default values are assigned ignoring the loaded csv file
-            elif isinstance(config['default'][fuel], (int, long, float, complex)):
-                logging.warn('No data file found for ' + fuel + ' in the zone ' + zone + '. Using default value ' + str(config['default'][fuel]) + ' EUR')
-                vals[(zone, fuel)] = [config['default'][fuel]] * len(idx_utc_noloc) #pd.Series(config['default'][fuel], index=idx_utc_noloc)
-                #FuelPrices.loc[idx[idx_utc_noloc], idx[zone, fuel]] = pd.Series(config['default'][fuel], index=idx_utc_noloc)
-            # Special case for lignite and peat, for backward compatibility
-            elif fuel == 'PriceOfLignite':
-                logging.warn('No price data found for ' + fuel + ' in the zone ' + zone + '. Using the same value as for Black Coal')
-                vals[(zone, fuel)] = FuelPrices[zone]['PriceOfBlackCoal']
-                #FuelPrices.loc[idx[idx_utc_noloc], idx[zone, fuel]] = FuelPrices[zone]['PriceOfBlackCoal']
-            elif fuel == 'PriceOfPeat':
-                logging.warn('No price data found for ' + fuel + ' in the zone ' + zone + '. Using the same value as for biomass')
-                vals[(zone, fuel)] = FuelPrices[zone]['PriceOfBiomass']
-                #FuelPrices.loc[idx[idx_utc_noloc], idx[zone, fuel]] = FuelPrices[zone]['PriceOfBiomass']
-            else:
-                logging.warn('No data file or default value found for ' + fuel + ' in the zone ' + zone + '. Assuming zero marginal price!')
-                vals[(zone, fuel)][idx[idx_utc_noloc]] = [0] * len(idx_utc_noloc)#pd.Series(0, index=idx_utc_noloc)
-                #FuelPrices.loc[idx[idx_utc_noloc], idx[zone, fuel]] = pd.Series(0, index=idx_utc_noloc)
-    FuelPrices = pd.DataFrame(vals, index=idx_utc_noloc)
-    '''
+
     # Alternative Fuel prices:
     tc = tm.time()
     fuels2 = ['PriceOfNuclear 2', 'PriceOfGas 2', 'PriceOfCrudeOil 2', 'PriceOfBiomass 2', 'PriceOfCO2 2', 'PriceOfDiesel 2', 'PriceOfHFO 2', 'PriceOfMunicipalSolidWaste 2', 'PriceOfLandFillGas 2']
@@ -286,7 +226,7 @@ def build_simulation(config, plot_load=False, PercentLocalSubsidy=1, PercentExpo
                     try:
                         if isinstance(FuelPricesPerZone['International'][FuelEntries2[fuel]], (int, long, float, complex)) and \
                                 FuelPricesPerZone['International'][FuelEntries2[fuel]] > 0:
-                            FuelPricesPerZone['International'][FuelEntries2[fuel]] = FuelPricesPerZone['International'][FuelEntries2[fuel]] * PercentExportCost
+                            FuelPricesPerZone['International'][FuelEntries2[fuel]] = FuelPricesPerZone['International'][FuelEntries2[fuel]] * ExportCostMultiplier
                             vals[(zone, fuel)] = [FuelPricesPerZone['International'][FuelEntries2[fuel]]] * len(idx_utc_noloc)
                     except:
                         if isinstance(config['default'][fuel], (int, long, float, complex)):
@@ -298,7 +238,7 @@ def build_simulation(config, plot_load=False, PercentLocalSubsidy=1, PercentExpo
                     # logging.warn('No data file found for ' + fuel + ' in the zone ' + zone + '. Using default value ' + str(config['default'][fuel]) + ' EUR')
                     if isinstance(FuelPricesPerZone['International'][FuelEntries2[fuel]], (int, long, float, complex)) and \
                             FuelPricesPerZone['International'][FuelEntries2[fuel]] > 0:
-                        FuelPricesPerZone['International'][FuelEntries2[fuel]] = FuelPricesPerZone['International'][FuelEntries2[fuel]] * PercentExportCost
+                        FuelPricesPerZone['International'][FuelEntries2[fuel]] = FuelPricesPerZone['International'][FuelEntries2[fuel]] * ExportCostMultiplier
                         vals[(zone, fuel)] = [FuelPricesPerZone['International'][FuelEntries2[fuel]]] * len(idx_utc_noloc)
                 except:
                     vals[(zone, fuel)] = [config['default'][fuel]] * len(idx_utc_noloc)
@@ -316,7 +256,6 @@ def build_simulation(config, plot_load=False, PercentLocalSubsidy=1, PercentExpo
     logging.info("Time to create Fuel Prices 2 Dataframe: {}s".format(tm.time() - tc))
     #FuelPrices = pd.concat([FuelPrices,FuelPrices2], axis=1)
 
-    ####### Edits #######
     # Interconnections:
     [Interconnections_sim, Interconnections_RoW, Interconnections] = interconnections(config['zones'], NTC, flows)
     if len(Interconnections_sim.columns) > 0:
@@ -324,7 +263,7 @@ def build_simulation(config, plot_load=False, PercentLocalSubsidy=1, PercentExpo
     else:
         NTCs = pd.DataFrame(index=idx_utc_noloc)
     Inter_RoW = Interconnections_RoW.loc[idx_utc_noloc, :]
-    ####### Edits #######
+
     # Clustering of the plants:
     if config['SimulationType'] == 'LP clustered':
         Plants_merged, mapping = clustering(plants, method='LP')
@@ -338,7 +277,6 @@ def build_simulation(config, plot_load=False, PercentLocalSubsidy=1, PercentExpo
     else:
         Plants_merged, mapping = clustering(plants, method=None)
 
-    ####### Edits #######
     # Renaming the columns to ease the production of parameters:
     Plants_merged.rename(columns={'StartUpCost': 'CostStartUp',
                                   'RampUpMax': 'RampUpMaximum',
@@ -374,7 +312,7 @@ def build_simulation(config, plot_load=False, PercentLocalSubsidy=1, PercentExpo
             if Plants_merged.Technology[u] == 'WTON' or Plants_merged.Technology[u] == 'WTOF':
                 Plants_merged.loc[u, 'PowerCapacity'] = Plants_merged.loc[u, 'PowerCapacity'] * config['modifiers']['Wind']
     if config['modifiers']['Storage'] != 1:
-        ####### Edits #######
+
         #logging.info('Scaling Storage Power and Capacity by a factor ' + str(config['modifiers']['Storage']))
         for u in Plants_merged.index:
             if isStorage(Plants_merged.Technology[u]):
@@ -408,24 +346,6 @@ def build_simulation(config, plot_load=False, PercentLocalSubsidy=1, PercentExpo
     StorageFormerIndexes = [s for s in plants.index if
                             plants['Technology'][s] in List_tech_storage]
 
-    # Same with the CHPs:
-    # Get the heat demand time series corresponding to the original plant list:
-
-    '''  ####### Edits #######
-    CHPFormerIndexes = [s for s in plants.index if
-                            plants['CHPType'][s] in List_types_CHP]
-    for s in CHPFormerIndexes:  # for all the old plant indexes
-        # get the old plant name corresponding to s:
-        oldname = plants['Unit'][s]
-        newname = mapping['NewIndex'][s]
-        if oldname not in HeatDemand:
-            logging.warn('No heat demand profile found for CHP plant "' + str(oldname) + '". Assuming zero')
-            HeatDemand[oldname] = 0
-        if oldname not in CostHeatSlack:
-            logging.warn('No heat cost profile found for CHP plant "' + str(oldname) + '". Assuming zero')
-            CostHeatSlack[oldname] = 0
-    '''
-
     # merge the outages:
     for i in plants.index:  # for all the old plant indexes
         # get the old plant name corresponding to s:
@@ -433,28 +353,11 @@ def build_simulation(config, plot_load=False, PercentLocalSubsidy=1, PercentExpo
         newname = mapping['NewIndex'][i]
 
     # Merging the time series relative to the clustered power plants:
-    '''####### Edits #######
-    ReservoirScaledInflows_merged = merge_series(plants, ReservoirScaledInflows, mapping, method='WeightedAverage', tablename='ScaledInflows')
-    ReservoirLevels_merged = merge_series(plants, ReservoirLevels, mapping, tablename='ReservoirLevels')
-    '''
+
     Outages_merged = merge_series(plants, Outages, mapping, tablename='Outages')
 
-    ''' ####### Edits #######
-    HeatDemand_merged = merge_series(plants, HeatDemand, mapping, tablename='HeatDemand',method='Sum')
-    CostHeatSlack_merged = merge_series(plants, CostHeatSlack, mapping, tablename='CostHeatSlack')
-    '''
     AF_merged = merge_series(plants, AF, mapping, tablename='AvailabilityFactors')
 
-    # Correcting heat demands in case of outages:
-    '''  ####### Edits #######
-    for key in HeatDemand_merged:
-        if key in Outages_merged and Outages_merged[key].max() > 0:
-            HeatDemand_merged[key] = HeatDemand_merged[key].values * (1 - Outages_merged[key].values)
-            logging.info('Corrected the heat demand profile for chp unit ' + key + ' with the outage values')
-    '''
-
-    ####### Edits #######
-    # %%
     # checking data
 
     check_df(Load, StartDate=idx_utc_noloc[0], StopDate=idx_utc_noloc[-1], name='Load')
@@ -465,29 +368,11 @@ def build_simulation(config, plot_load=False, PercentLocalSubsidy=1, PercentExpo
     check_df(FuelPrices, StartDate=idx_utc_noloc[0], StopDate=idx_utc_noloc[-1], name='FuelPrices')
     check_df(FuelPrices2, StartDate=idx_utc_noloc[0], StopDate=idx_utc_noloc[-1], name='FuelPrices')
     check_df(NTCs, StartDate=idx_utc_noloc[0], StopDate=idx_utc_noloc[-1], name='NTCs')
-    '''####### Edits #######
-    check_df(ReservoirLevels_merged, StartDate=idx_utc_noloc[0], StopDate=idx_utc_noloc[-1],
-             name='ReservoirLevels_merged')
-    check_df(ReservoirScaledInflows_merged, StartDate=idx_utc_noloc[0], StopDate=idx_utc_noloc[-1],
-             name='ReservoirScaledInflows_merged')
-    '''
+
     check_df(LoadShedding, StartDate=idx_utc_noloc[0], StopDate=idx_utc_noloc[-1],
              name='LoadShedding')
     check_df(CostLoadShedding, StartDate=idx_utc_noloc[0], StopDate=idx_utc_noloc[-1],
              name='CostLoadShedding')
-    """  
-    check_df(HeatDemand_merged, StartDate=idx_utc_noloc[0], StopDate=idx_utc_noloc[-1],
-             name='HeatDemand_merged')
-    check_df(CostHeatSlack_merged, StartDate=idx_utc_noloc[0], StopDate=idx_utc_noloc[-1],
-             name='CostHeatSlack_merged')
-    """
-    ####### Edits #######
-
-    #    for key in Renewables:
-    #        check_df(Renewables[key], StartDate=idx_utc_noloc[0], StopDate=idx_utc_noloc[-1],
-    #                 name='Renewables["' + key + '"]')
-
-    # %%%
 
     # Extending the data to include the look-ahead period (with constant values assumed)
     enddate_long = idx_utc_noloc[-1] + dt.timedelta(days=config['LookAhead'])
@@ -503,15 +388,8 @@ def build_simulation(config, plot_load=False, PercentLocalSubsidy=1, PercentExpo
     FuelPrices2 = FuelPrices2.reindex(idx_long, method='nearest').fillna(method='bfill')
     Load = Load.reindex(idx_long, method='nearest').fillna(method='bfill')
     Outages_merged = Outages_merged.reindex(idx_long, method='nearest').fillna(method='bfill')
-    '''####### Edits #######
-    ReservoirLevels_merged = ReservoirLevels_merged.reindex(idx_long, method='nearest').fillna(method='bfill')
-    ReservoirScaledInflows_merged = ReservoirScaledInflows_merged.reindex(idx_long, method='nearest').fillna(
-    method='bfill')
-    '''
     LoadShedding = LoadShedding.reindex(idx_long, method='nearest').fillna(method='bfill')
     CostLoadShedding = CostLoadShedding.reindex(idx_long, method='nearest').fillna(method='bfill')
-    #    for tr in Renewables:
-    #        Renewables[tr] = Renewables[tr].reindex(idx_long, method='nearest').fillna(method='bfill')
 
     # %%################################################################################################################
     ############################################   Sets    ############################################################
@@ -550,18 +428,13 @@ def build_simulation(config, plot_load=False, PercentLocalSubsidy=1, PercentExpo
     sets_param['CHPPowerLossFactor'] = ['chp']
     sets_param['CHPMaxHeat'] = ['chp']
     sets_param['CostFixed'] = ['u']
-    ''' ####### Edits #######
-    sets_param['CostHeatSlack'] = ['chp','h']
-    '''
     sets_param['CostLoadShedding'] = ['n','h']
     sets_param['CostRampUp'] = ['u']
     sets_param['CostRampDown'] = ['u']
     sets_param['CostShutDown'] = ['u']
     sets_param['CostStartUp'] = ['u']
     sets_param['CostVariable'] = ['u', 'h']
-    ####### Edits #######
     sets_param['CostVariableB'] = ['u', 'h']
-    ####### Edits #######
     sets_param['Curtailment'] = ['n']
     sets_param['Demand'] = ['mk', 'n', 'h']
     sets_param['Efficiency'] = ['u']
@@ -571,15 +444,7 @@ def build_simulation(config, plot_load=False, PercentLocalSubsidy=1, PercentExpo
     sets_param['FlowMinimum'] = ['l', 'h']
     sets_param['FuelPrice'] = ['n', 'f', 'h']
     sets_param['Fuel'] = ['u', 'f']
-    ''' ####### Edits #######
-    sets_param['HeatDemand'] = ['chp','h']
-    '''
     sets_param['LineNode'] = ['l', 'n']
-    ####### Edits #######
-    #sets_param['SendNode'] = ['l']
-    #sets_param['ReceiveNode'] = ['l']
-    #sets_param['SendReceiveNodes'] = ['l','n','n']
-    ####### Edits #######
     sets_param['LoadShedding'] = ['n','h']
     sets_param['Location'] = ['u', 'n']
     sets_param['Markup'] = ['u', 'h']
@@ -639,46 +504,6 @@ def build_simulation(config, plot_load=False, PercentLocalSubsidy=1, PercentExpo
         if var in Plants_merged:
             parameters[var]['val'] = Plants_merged[var].values
 
-    ''' ####### Edits #######
-    # List of parameters whose value is known, and provided in the dataframe Plants_sto.
-    for var in ['StorageChargingCapacity', 'StorageChargingEfficiency']:
-        parameters[var]['val'] = Plants_sto[var].values
-
-    # The storage discharge efficiency is actually given by the unit efficiency:
-    parameters['StorageDischargeEfficiency']['val'] = Plants_sto['Efficiency'].values
-    
-    # List of parameters whose value is known, and provided in the dataframe Plants_chp
-    for var in ['CHPPowerToHeat','CHPPowerLossFactor', 'CHPMaxHeat']:
-        parameters[var]['val'] = Plants_chp[var].values
-
-    # Storage profile and initial state:
-    for i, s in enumerate(sets['s']):
-        if s in ReservoirLevels_merged:
-            # get the time
-            parameters['StorageInitial']['val'][i] = ReservoirLevels_merged[s][idx_long[0]] * \
-                                                     Plants_sto['StorageCapacity'][s]
-            parameters['StorageProfile']['val'][i, :] = ReservoirLevels_merged[s][idx_long].values
-            if any(ReservoirLevels_merged[s] > 1):
-                logging.warn(s + ': The reservoir level is sometimes higher than its capacity!')
-        else:
-            logging.warn( 'Could not find reservoir level data for storage plant ' + s + '. Assuming 50% of capacity')
-            parameters['StorageInitial']['val'][i] = 0.5 * Plants_sto['StorageCapacity'][s]
-            parameters['StorageProfile']['val'][i, :] = 0.5
-
-    # Storage Inflows:
-    for i, s in enumerate(sets['s']):
-        if s in ReservoirScaledInflows_merged:
-            parameters['StorageInflow']['val'][i, :] = ReservoirScaledInflows_merged[s][idx_long].values * \
-                                                       Plants_sto['PowerCapacity'][s]
-    # CHP time series:
-    ''' ####### Edits #######
-    ''' ####### Edits #######
-    for i, u in enumerate(sets['chp']):
-        if u in HeatDemand_merged:
-            parameters['HeatDemand']['val'][i, :] = HeatDemand_merged[u][idx_long].values 
-            parameters['CostHeatSlack']['val'][i, :] = CostHeatSlack_merged[u][idx_long].values
-    '''####### Edits #######
-
     # Ramping rates are reconstructed for the non dimensional value provided (start-up and normal ramping are not differentiated)
     parameters['RampUpMaximum']['val'] = Plants_merged['RampUpRate'].values * Plants_merged['PowerCapacity'].values * 60
     parameters['RampDownMaximum']['val'] = Plants_merged['RampDownRate'].values * Plants_merged[
@@ -699,7 +524,6 @@ def build_simulation(config, plot_load=False, PercentLocalSubsidy=1, PercentExpo
                 parameters['AvailabilityFactor']['val'][i, :] = AF_merged[u].values
 
     # Demand
-    # Dayahead['NL'][1800:1896] = Dayahead['NL'][1632:1728]
     reserve_2U_tot = {i: (np.sqrt(10 * max(Load[i]) + 150 ** 2) - 150) for i in Load.columns}
     reserve_2D_tot = {i: (0.5 * reserve_2U_tot[i]) for i in Load.columns}
 
@@ -721,7 +545,6 @@ def build_simulation(config, plot_load=False, PercentLocalSubsidy=1, PercentExpo
     # %%#################################################################################################################################################################################################
     # Variable Cost
     # Equivalence dictionnary between fuel types and price entries in the config sheet:
-    ####### Edits #######
     FuelEntries = {'BIO':'PriceOfBiomass', 'GAS':'PriceOfGas', 'HRD':'PriceOfBlackCoal', 'LIG':'PriceOfLignite', 'NUC':'PriceOfNuclear', 'OIL':'PriceOfCrudeOil', 'PEA':'PriceOfPeat', 'DSL':'PriceOfDiesel', 'HFO':'PriceOfHFO', 'MSW':'PriceOfMunicipalSolidWaste', 'LFG':'PriceOfLandFillGas'}
     for unit in range(Nunits):
         found = False
@@ -737,7 +560,6 @@ def build_simulation(config, plot_load=False, PercentLocalSubsidy=1, PercentExpo
                 unit]
             found = True
         if not found:
-            ####### Edits #######
             #logging.warn('No fuel price value has been found for fuel ' + Plants_merged['Fuel'][unit] + ' in unit ' + \
             #             Plants_merged['Unit'][unit] + '. A null variable cost has been assigned')
             pass
@@ -758,11 +580,9 @@ def build_simulation(config, plot_load=False, PercentLocalSubsidy=1, PercentExpo
                 unit]
             found = True
         if not found:
-            ####### Edits #######
             #logging.warn('No fuel price value has been found for fuel ' + Plants_merged['Fuel'][unit] + ' in unit ' + \
             #             Plants_merged['Unit'][unit] + '. A null variable cost has been assigned')
             pass
-    ####### Edits #######
 
     # %%#################################################################################################################################################################################################
 
@@ -777,11 +597,6 @@ def build_simulation(config, plot_load=False, PercentLocalSubsidy=1, PercentExpo
     check_MinMaxFlows(parameters['FlowMinimum']['val'],parameters['FlowMaximum']['val'])
 
     parameters['LineNode'] = incidence_matrix(sets, 'l', parameters, 'LineNode')
-    ####### Edits #######
-    #parameters['SendNode'] = ExtractSendNode(sets, 'l', parameters, 'SendNode')
-    #parameters['ReceiveNode'] = ExtractReceiveNode(sets, 'l', parameters, 'ReceiveNode')
-    #parameters['SendReceiveNodes'] = ExtractSendReceiveNodes(sets, 'l', parameters, 'SendReceiveNodes')
-    ####### Edits #######
 
     # Outage Factors
     if len(Outages_merged.columns) != 0:
@@ -810,22 +625,6 @@ def build_simulation(config, plot_load=False, PercentLocalSubsidy=1, PercentExpo
     for i in range(len(sets['n'])):
         parameters['Location']['val'][:, i] = (Plants_merged['Zone'] == config['zones'][i]).values
 
-    ''' ####### Edits #######
-    # CHPType parameter:
-    sets['chp_type'] = ['Extraction','Back-Pressure', 'P2H']
-    parameters['CHPType'] = define_parameter(['chp','chp_type'],sets,value=0)
-    for i,u in enumerate(sets['chp']):
-        if u in Plants_chp.index:
-            if Plants_chp.loc[u,'CHPType'].lower() == 'extraction':
-                parameters['CHPType']['val'][i,0] = 1
-            elif Plants_chp.loc[u,'CHPType'].lower() == 'back-pressure':
-                parameters['CHPType']['val'][i,1] = 1
-            elif Plants_chp.loc[u,'CHPType'].lower() == 'p2h':
-                parameters['CHPType']['val'][i,2] = 1
-            else:
-                logging.error('CHPType not valid for plant ' + u)
-                sys.exit(1)
-    ''' ####### Edits #######
     # Initial Power
     if 'InitialPower' in Plants_merged:
         parameters['PowerInitial']['val'] = Plants_merged['InitialPower'].values
@@ -864,7 +663,6 @@ def build_simulation(config, plot_load=False, PercentLocalSubsidy=1, PercentExpo
                     pass
 
     parameters['FuelPricePerZone'] = {'sets': ['n', 'f','FuelPriceTypes'], 'val': values}
-    ####### Edits #######
 
     # %%#################################################################################################################
     ######################################   Simulation Environment     ################################################
@@ -910,22 +708,7 @@ def build_simulation(config, plot_load=False, PercentLocalSubsidy=1, PercentExpo
         else:
             shutil.copyfile(os.path.join(GMS_FOLDER, 'UCM_h_isolated.gms'),
                             os.path.join(sim, 'UCM_h.gms'))
-    '''
-    #Add new sets declaration to the GAMS code if multiple zones belong to a country
-    for country in config['countries']:
-        try:
-            if sets[country]:
-                fin = open(os.path.join(sim,'UCM_h.gms'),"rt")
-                tmp = fin.readlines()
-                fin.close()
-                fout = open(os.path.join(sim,'UCM_h.gms'), "wt")
-                lineNo = [lineNo for lineNo, line in enumerate(tmp) if line ==  'l                Lines\r\n']
-                tmp.insert(lineNo[0], country + '(n)            Subset of Nodes that belong to the country ' + country + '\n')
-                fout.write(''.join(tmp))
-                fout.close()
-        except:
-            logging.warn( 'Country '+ country +' is represented by only one zone')
-    '''
+
     gmsfile = open(os.path.join(sim, 'UCM.gpr'), 'w')
     gmsfile.write(
         '[PROJECT] \n \n[RP:UCM_H] \n1= \n[OPENWINDOW_1] \nFILE0=UCM_h.gms \nFILE1=UCM_h.gms \nMAXIM=1 \nTOP=50 \nLEFT=50 \nHEIGHT=400 \nWIDTH=400')

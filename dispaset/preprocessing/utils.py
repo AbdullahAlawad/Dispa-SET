@@ -21,7 +21,6 @@ def incidence_matrix(sets, set_used, parameters, param_used):
     This function generates the incidence matrix of the lines within the nodes
     A particular case is considered for the node "Rest Of the World", which is no explicitely defined in DispaSET
     """
-    ####### Edits #######
     for i in range(len(sets[set_used])):
         [from_node, to_node] = sets[set_used][i].split('->')
         if (from_node.strip() in sets['n']) and (to_node.strip() in sets['n']):
@@ -29,88 +28,8 @@ def incidence_matrix(sets, set_used, parameters, param_used):
             parameters[param_used]['val'][i, sets['n'].index(from_node.strip())] = -1
         else:
             logging.warn("The line " + str(sets[set_used][i]) + " contains unrecognized nodes")
-    ####### Edits #######
 
     return parameters[param_used]
-
-'''
-     ####### Edits #######
-    for i in range(len(sets[set_used])):
-        try:
-            first_country, second_country = sets[set_used][i].split(' -> ')
-        except:
-            logging.error('The format of the interconnection is not valid.')
-            sys.exit(1)
-    """
-        if 'RoW' not in sets[set_used][i]:
-            first_country = sets[set_used][i][0:2]
-            second_country = sets[set_used][i][6:8]
-        elif 'RoW' == sets[set_used][i][0:3]:
-            first_country = sets[set_used][i][0:3]
-            second_country = sets[set_used][i][7:9]
-        elif 'RoW' == sets[set_used][i][6:9]:
-            first_country = sets[set_used][i][0:2]
-            second_country = sets[set_used][i][6:9]
-        else:
-            logging.error('The format of the interconnection is not valid.')
-            sys.exit(1)
-    """
-     ####### Edits #######
-
-        for j in range(len(sets['n'])):
-            if first_country == sets['n'][j]:
-                parameters[param_used]['val'][i, j] = -1
-            elif second_country == sets['n'][j]:
-                parameters[param_used]['val'][i, j] = 1
-
-    return parameters[param_used]
-'''
-
-'''####### Edits #######
-def ExtractSendReceiveNodes(sets, set_used, parameters, param_used):
-    """
-    This function generates the SendReceiveNode matrix for the lines.
-    This matrix assigns a value of {0,1} for each combination of line, sending node and receiving node
-    """
-
-    for i in range(len(sets[set_used])):
-        [from_node, to_node] = sets[set_used][i].split('->')
-        if (from_node.strip() in sets['n']) and (to_node.strip() in sets['n']):
-            parameters[param_used]['val'][i, sets['n'].index(from_node.strip()), sets['n'].index(to_node.strip())] = 1
-        else:
-            logging.warn("The line " + str(sets[set_used][i]) + " contains unrecognized nodes")
-
-    return parameters[param_used]
-    
-
-def ExtractSendNode(sets, set_used, parameters, param_used):
-    """
-    This function generates the incidence matrix of the lines within the nodes
-    A particular case is considered for the node "Rest Of the World", which is no explicitely defined in DispaSET
-    """
-    for i in range(len(sets[set_used])):
-        [from_node, to_node] = sets[set_used][i].split('->')
-        if (from_node.strip() in sets['n']) and (to_node.strip() in sets['n']):
-            parameters[param_used]['val'] = sets['n'].index(from_node.strip())
-        else:
-            logging.warn("The line " + str(sets[set_used][i]) + " contains unrecognized nodes")
-    
-    return parameters[param_used]
-
-def ExtractReceiveNode(sets, set_used, parameters, param_used):
-    """
-    This function generates the incidence matrix of the lines within the nodes
-    A particular case is considered for the node "Rest Of the World", which is no explicitely defined in DispaSET
-    """
-    for i in range(len(sets[set_used])):
-        [from_node, to_node] = sets[set_used][i].split('->')
-        if (from_node.strip() in sets['n']) and (to_node.strip() in sets['n']):
-            parameters[param_used]['val'] = sets['n'].index(to_node.strip())
-        else:
-            logging.warn("The line " + str(sets[set_used][i]) + " contains unrecognized nodes")
-
-    return parameters[param_used]
-'''####### Edits #######
 
 def interconnections(Simulation_list, NTC_inter, Historical_flows):
     """
@@ -158,7 +77,6 @@ def interconnections(Simulation_list, NTC_inter, Historical_flows):
     for interconnection in simulation_connections:
         if interconnection in NTC_inter.columns:
             df_zones_simulated[interconnection] = NTC_inter[interconnection]
-            ####### Edits #######
             #logging.info('Detected interconnection ' + interconnection + '. The historical NTCs will be imposed as maximum flow value')
     interconnections1 = df_zones_simulated.columns
 
@@ -295,13 +213,6 @@ def clustering(plants, method='Standard', subMethod= 'None', Nslices=2, PartLoad
         plants_string = plants[string_keys].iloc[i].fillna('')
         plants_string2 = plants[string_keys2].iloc[i].fillna('')
         for j in plants_merged.index:  # j corresponds to the clustered plants
-            '''
-            same_type = all([plants[key].fillna('')[i] == plants_merged[key].fillna('')[j] for key in
-                             string_keys]) and cluster  # if clustering is off, all plants will be considered as different and will therefore not be merged
-            
-            same_fuel = all([plants[key].fillna('')[i] == plants_merged[key].fillna('')[j] for key in
-                             string_keys2]) and cluster  # if clustering is off, all plants will be considered as different and will therefore not be merged
-            '''
             same_type = all(plants_string == plants_merged[string_keys].iloc[j].fillna(''))
             same_fuel = all(plants_string2 == plants_merged[string_keys2].iloc[j].fillna(''))
             same_fingerprint = (fingerprints[i] == fingerprints_merged[j])

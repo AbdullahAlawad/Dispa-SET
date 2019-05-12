@@ -81,8 +81,6 @@ else:
     if import_local_lib('gdxcc'):
         import gdxcc
 
-#####################
-
 
 def _insert_symbols(gdxHandle, sets, parameters):
     """
@@ -285,62 +283,6 @@ def gdx_to_dataframe(data, fixindex=False, verbose=False):
                     vals[(i,j)][n] = m
                 out[symbol] = pd.DataFrame(vals)
                 logging.debug('Successfully loaded variable ' + symbol)
-                """
-                s1_unique, idx1 = np.unique(col1, return_inverse=True)
-                s2_unique, idx2 = np.unique(col2, return_inverse=True)
-                M = s2_unique.shape[0]
-                idx_combined = idx1 * M + idx2
-                print idx1.shape, idx2.shape, idx_combined.shape
-                series = pd.DataFrame(data=[col4], index=col3, columns=idx_combined )
-                """
-
-                """
-                vars1 = set(col1)
-                vars2 = set(col2)
-                N, M = len(vars1), len(vars2)
-                series1, series2 = np.meshgrid(vars1, vars2)
-                s1_unique, idx1 = np.unique(series1, return_inverse=True)
-                s2_unique, idx2 = np.unique(series2, return_inverse=True)
-                idx_combwined = idx1 * M + idx2
-                """
-
-                """
-                for element in data[symbol]:
-                    if not element[0] in vars1:
-                        vars1.add(element[0])
-                vars2 = set()
-                for element in data[symbol]:
-                    if not element[1] in vars2:
-                        vars2.add(element[1])
-                vars1 = list(vars1)
-                series_1 = list(vars1 * len(vars2))
-                series_2 = []
-                for var2 in vars2:
-                    series_2 = series_2 + [var2] * len(vars1)
-                combined_array = [series_1, series_2]
-                out[symbol] = pd.DataFrame(columns=combined_array)
-                idx = pd.IndexSlice
-                #series=pd.DataFrame(columns=combined_array)
-                idx1, idx2, values = [], [], []
-                for i, j, n, m in data[symbol]:
-                    if i in vars1 and j in vars2:
-                        idx1.append( idx[n] )
-                        idx2.append(dx[i,j] i )
-                        values.append( m )
-                        #series.loc[idx[n], idx[i, j]] = m
-                idx1, idx2, values = np.asarray(idx1), np.asarray(idx2), np.asarray(values)
-                #series.loc[idx1, idx2] =  values
-                print values.shape, idx1.shape, idx2.shape
-                series = pd.DataFrame(data=[values], index=idx1, columns=idx2)
-                """
-
-                """
-                for element in data[symbol]:
-                    for i in vars1:
-                        for j in vars2:
-                            if i == element[0] and j== element[1]:
-                                series.loc[idx[element[2]], idx[i, j]] = element[3]
-                """
             elif dim == 3:
                 vals = {}
                 for i, n, m in data[symbol]:
@@ -349,20 +291,6 @@ def gdx_to_dataframe(data, fixindex=False, verbose=False):
                     vals[i][n] = m
                 out[symbol] = pd.DataFrame(vals)
                 logging.debug('Successfully loaded variable ' + symbol)
-                """
-                vars1 = set()
-                for element in data[symbol]:
-                    if not element[0] in vars1:
-                        vars1.add(element[0])
-                vals = {}
-                while vars1:
-                    vars2 = {}
-                    var1 = vars1.pop()
-                    for element in data[symbol]:
-                        if var1 == element[0]:
-                            vars2[element[1]] = element[2]
-                    vals[var1] = vars2
-                """
             elif dim == 2:
                 vals = {}
                 for element in data[symbol]:

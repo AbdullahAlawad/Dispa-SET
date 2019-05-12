@@ -157,12 +157,12 @@ def UnitBasedTable(plants,path,idx,zones,fallbacks=['Unit'],tablename='',default
                     out[u] = data[header]
                     found = True
                     if i > 0:
-                        ####### Edits #######
+
                         #logging.info('No specific information was found for unit ' + u + ' in table ' + tablename + '. The generic information for ' + str(header) + ' has been used')
                         pass
                     break
             if not found:
-                ####### Edits #######
+
                 #logging.info('No specific information was found for unit ' + u + ' in table ' + tablename + '. Using default value ' + str(default))
                 if not default is None:
                     out[u] = default        
@@ -429,27 +429,9 @@ def load_csv(filename, TempPath='.pickle', header=0, skiprows=[], skip_footer=0,
     :param file_excel: path to the excel file
     :param TempPath: path to store the temporary data files
     """
-    ####### Edits #######
+
     data = pd.read_csv(filename, header=header, skiprows=skiprows, skipfooter=skip_footer, index_col=index_col,
                        parse_dates=parse_dates)
-    """
-    #TODO: this can be replaced by a leaner version using: import tempfile
-    import os
-
-    filepath_pandas = TempPath + '/' + filename.replace('/', '-') + '-' + '.p'
-    if not os.path.isdir(TempPath):
-        os.mkdir(TempPath)
-    if not os.path.isfile(filepath_pandas):
-        time_pd = 0
-    else:
-        time_pd = os.path.getmtime(filepath_pandas)
-    if os.path.getmtime(filename) > time_pd:
-        data = pd.read_csv(filename, header=header, skiprows=skiprows, skipfooter=skip_footer, index_col=index_col, parse_dates=parse_dates)
-        data.to_pickle(filepath_pandas)
-    else:
-        data = pd.read_pickle(filepath_pandas)
-    """
-    ####### Edits #######
     return data
 
 
@@ -533,7 +515,6 @@ def load_config_excel(ConfigFile):
 
     config['zones'] = read_truefalse(sheet, 86, 1, 102, 3)
     config['zones'] = config['zones'] + read_truefalse(sheet, 86, 4, 102, 6)
-    ####### Edits #######
     countries_list = [(i, item.value.encode("utf-8")) for i, item in
                       enumerate(sheet.row_slice(rowx=155, start_colx=0, end_colx=100))]
     countries_list = [x for x in countries_list if x[1] != '']
@@ -547,8 +528,6 @@ def load_config_excel(ConfigFile):
     config['country_zones'] = country_zones
 
     config['countries'] = country_zones.keys()
-
-    ####### Edits #######
 
     config['modifiers'] = {}
     config['modifiers']['Demand'] = sheet.cell_value(111, 2)

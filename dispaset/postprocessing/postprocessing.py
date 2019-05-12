@@ -154,7 +154,6 @@ def get_load_data(datain, c):
                 VRE = VRE + datain['AvailabilityFactor'][u].values * datain['PowerCapacity'].loc[u, 'PowerCapacity']
     Interconnections = np.zeros(len(out))
     for l in datain['FlowMinimum']:
-        ####### Edits #######
         from_node, to_node = l.split('->')
         #        if l[:2] == c:
         if from_node.strip() == c:
@@ -162,7 +161,6 @@ def get_load_data(datain, c):
         #        elif l[-2:] == c:
         elif to_node.strip() == c:
             Interconnections = Interconnections + datain['FlowMinimum'][l].values
-        ####### Edits #######
 
     out['ResidualLoad'] = out['Load'] - VRE
     out['NetResidualLoad'] = out['ResidualLoad'] - Interconnections
@@ -261,7 +259,6 @@ def get_plot_data(inputs, results, c):
     plotdata['FlowIn'] = 0
     plotdata['FlowOut'] = 0
     for col in results['PowerFlow']:
-        ####### Edits #######
         from_node, to_node = col.split('->')
         #        if col[-2:] == c:
         if to_node.strip() == c:
@@ -270,7 +267,6 @@ def get_plot_data(inputs, results, c):
         #        if col[:2] == c:
         if from_node.strip() == c:
             plotdata['FlowOut'] = plotdata['FlowOut'] - results['PowerFlow'][col]
-        ####### Edits #######
 
     # re-ordering columns:
     plotdata = plotdata[[u'FlowOut', u'NUC', u'LFG', u'DSL', u'MSW',
@@ -738,7 +734,7 @@ def get_result_analysis(inputs, results):
 
     CountryData['LoadShedding'] = results['NodeOutputShedLoad'].sum(axis=0) / 1E6
     CountryData['Curtailment'] = results['UnitOutputCurtailedPower'].sum(axis=0) / 1E6
-    print '\nCountry-Specific values (in TWh or in MW):'
+    print '\nZone-Specific values (in TWh or in MW):'
     print CountryData
 
     # Congestion:
