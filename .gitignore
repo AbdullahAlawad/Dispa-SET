@@ -126,3 +126,7 @@ Docs/_build/*
 Docs/_static/*
 
 .idea/*
+/
+Database
+Simulations
+/
