@@ -60,6 +60,8 @@ def build_simulation(config, LocalSubsidyMultiplier=1, ExportCostMultiplier=1):
     #Based on specified GAMS code, Define: 1) the NTC,  2) the zones (including or excluding substation nodes)
     if config['GAMS_ModelCode'] == 'Standard':
         pass
+    elif config['GAMS_ModelCode'] == 'Standard_2':
+        pass
     elif config['GAMS_ModelCode'] == 'GCC_virtual_connections':
         config['NTC'] = config['NTC1']
         if 'Alfadhili' in config['zones']:
@@ -224,11 +226,20 @@ def build_simulation(config, LocalSubsidyMultiplier=1, ExportCostMultiplier=1):
             tmp2 = load_csv(config[fuel], header=None, index_col=0, parse_dates=True)
             tmp2.index = tmp2.index.tz_localize(None)
             for zone in config['zones']:
-                vals[(zone, fuel)] = [i[0] for i in tmp2[(tmp2.index >= idx_utc_noloc[0]) & (tmp2.index <= idx_utc_noloc[-1])].values]
+                if len([i[0] for i in tmp2[(tmp2.index >= idx_utc_noloc[0]) & (tmp2.index <= idx_utc_noloc[-1])].values])==len(idx_utc_noloc):
+                    vals[(zone, fuel)] = [i[0] for i in tmp2[(tmp2.index >= idx_utc_noloc[0]) & (
+                                tmp2.index <= idx_utc_noloc[-1])].values]
+                else:
+                    diff = abs(len([i[0] for i in tmp2[(tmp2.index >= idx_utc_noloc[0]) & (tmp2.index <= idx_utc_noloc[-1])].values]) - len(idx_utc_noloc))
+                    vals[(zone, fuel)] = [i[0] for i in tmp2[(tmp2.index >= idx_utc_noloc[0]) & (tmp2.index <= idx_utc_noloc[-1]+dt.timedelta(hours=diff))].values]
         elif isinstance(FirstCell, str) and isinstance(tmp, pd.DataFrame):
             for zone in config['zones']:
                 if zone in tmp.columns:
-                    vals[(zone, fuel)] = tmp[(tmp.index >= idx_utc_noloc[0]) & (tmp.index <= idx_utc_noloc[-1])][zone].values #tmp[zone].values
+                    if len(tmp[(tmp.index >= idx_utc_noloc[0]) & (tmp.index <= idx_utc_noloc[-1])][zone].values) == len(idx_utc_noloc):
+                        vals[(zone, fuel)] = tmp[(tmp.index >= idx_utc_noloc[0]) & (tmp.index <= idx_utc_noloc[-1])][zone].values
+                    else:
+                        diff = abs(len(tmp[(tmp.index >= idx_utc_noloc[0]) & (tmp.index <= idx_utc_noloc[-1])][zone].values) - len(idx_utc_noloc))
+                        vals[(zone, fuel)] = tmp[(tmp.index >= idx_utc_noloc[0]) & (tmp.index <= idx_utc_noloc[-1]+dt.timedelta(hours=diff))][zone].values
                 else:
                     try:
                         if isinstance(FuelPricesPerZone[zone][FuelEntries[fuel]], (int, float, complex)) and FuelPricesPerZone[zone][FuelEntries[fuel]] > 0:
@@ -289,11 +300,25 @@ def build_simulation(config, LocalSubsidyMultiplier=1, ExportCostMultiplier=1):
             tmp2 = load_csv(config[fuel], header=None, index_col=0, parse_dates=True)
             tmp2.index = tmp2.index.tz_localize(None)
             for zone in config['zones']:
-                vals[(zone, fuel)] = [i[0] for i in tmp2[(tmp2.index >= idx_utc_noloc[0]) & (tmp2.index <= idx_utc_noloc[-1])].values]
+                if len([i[0] for i in
+                        tmp2[(tmp2.index >= idx_utc_noloc[0]) & (tmp2.index <= idx_utc_noloc[-1])].values]) == len(
+                        idx_utc_noloc):
+                    vals[(zone, fuel)] = [i[0] for i in tmp2[(tmp2.index >= idx_utc_noloc[0]) & (
+                            tmp2.index <= idx_utc_noloc[-1])].values]
+                else:
+                    diff = abs(len([i[0] for i in tmp2[
+                        (tmp2.index >= idx_utc_noloc[0]) & (tmp2.index <= idx_utc_noloc[-1])].values]) - len(
+                        idx_utc_noloc))
+                    vals[(zone, fuel)] = [i[0] for i in tmp2[(tmp2.index >= idx_utc_noloc[0]) & (
+                                tmp2.index <= idx_utc_noloc[-1] + dt.timedelta(hours=diff))].values]
         elif isinstance(FirstCell, str) and isinstance(tmp, pd.DataFrame):
             for zone in config['zones']:
                 if zone in tmp.columns:
-                    vals[(zone, fuel)] = tmp[(tmp.index >= idx_utc_noloc[0]) & (tmp.index <= idx_utc_noloc[-1])][zone].values #tmp[zone].values
+                    if len(tmp[(tmp.index >= idx_utc_noloc[0]) & (tmp.index <= idx_utc_noloc[-1])][zone].values) == len(idx_utc_noloc):
+                        vals[(zone, fuel)] = tmp[(tmp.index >= idx_utc_noloc[0]) & (tmp.index <= idx_utc_noloc[-1])][zone].values
+                    else:
+                        diff = abs(len(tmp[(tmp.index >= idx_utc_noloc[0]) & (tmp.index <= idx_utc_noloc[-1])][zone].values) - len(idx_utc_noloc))
+                        vals[(zone, fuel)] = tmp[(tmp.index >= idx_utc_noloc[0]) & (tmp.index <= idx_utc_noloc[-1]+dt.timedelta(hours=diff))][zone].values
                 else:
                     try:
                         if isinstance(FuelPricesPerZone['International'][FuelEntries2[fuel]], (int, float, complex)) and \
@@ -328,7 +353,6 @@ def build_simulation(config, LocalSubsidyMultiplier=1, ExportCostMultiplier=1):
             for zone in config['zones']:
                 vals[(zone, fuel)] = [0] * len(idx_utc_noloc)
     FuelPrices2 = pd.DataFrame(vals, index=idx_utc_noloc)
-    #FuelPrices = pd.concat([FuelPrices,FuelPrices2], axis=1)
 
     # Interconnections:
     [Interconnections_sim, Interconnections_RoW, Interconnections] = interconnections(config['zones'], NTC, flows)
@@ -455,7 +479,7 @@ def build_simulation(config, LocalSubsidyMultiplier=1, ExportCostMultiplier=1):
     check_df(Outages_merged, StartDate=idx_utc_noloc[0], StopDate=idx_utc_noloc[-1], name='Outages_merged')
     check_df(Inter_RoW, StartDate=idx_utc_noloc[0], StopDate=idx_utc_noloc[-1], name='Inter_RoW')
     check_df(FuelPrices, StartDate=idx_utc_noloc[0], StopDate=idx_utc_noloc[-1], name='FuelPrices')
-    check_df(FuelPrices2, StartDate=idx_utc_noloc[0], StopDate=idx_utc_noloc[-1], name='FuelPrices')
+    check_df(FuelPrices2, StartDate=idx_utc_noloc[0], StopDate=idx_utc_noloc[-1], name='FuelPrices2')
     check_df(NTCs, StartDate=idx_utc_noloc[0], StopDate=idx_utc_noloc[-1], name='NTCs')
     #check_df(ReservoirLevels_merged, StartDate=idx_utc_noloc[0], StopDate=idx_utc_noloc[-1], name='ReservoirLevels_merged')
     #check_df(ReservoirScaledInflows_merged, StartDate=idx_utc_noloc[0], StopDate=idx_utc_noloc[-1], name='ReservoirScaledInflows_merged')
@@ -690,40 +714,42 @@ def build_simulation(config, LocalSubsidyMultiplier=1, ExportCostMultiplier=1):
     for unit in range(Nunits):
         found = False
         zone = Plants_merged['Zone'][unit]
-        for FuelEntry in FuelEntries:
-            if Plants_merged['Fuel'][unit] == FuelEntry:
-                parameters['CostVariable']['val'][unit, :] = FuelPrices[zone][FuelEntries[FuelEntry]] / Plants_merged['Efficiency'][unit] + \
-                                                             Plants_merged['EmissionRate'][unit] * FuelPrices[zone]['PriceOfCO2']
+        if zone in config['zones']:
+            for FuelEntry in FuelEntries:
+                if Plants_merged['Fuel'][unit] == FuelEntry:
+                    parameters['CostVariable']['val'][unit, :] = FuelPrices[zone][FuelEntries[FuelEntry]] / Plants_merged['Efficiency'][unit] + \
+                                                                 Plants_merged['EmissionRate'][unit] * FuelPrices[zone]['PriceOfCO2']
+                    found = True
+            # Special case for biomass plants, which are not included in EU ETS:
+            if Plants_merged['Fuel'][unit] == 'BIO':
+                parameters['CostVariable']['val'][unit, :] = FuelPrices[zone]['PriceOfBiomass'] / Plants_merged['Efficiency'][
+                    unit]
                 found = True
-        # Special case for biomass plants, which are not included in EU ETS:
-        if Plants_merged['Fuel'][unit] == 'BIO':
-            parameters['CostVariable']['val'][unit, :] = FuelPrices[zone]['PriceOfBiomass'] / Plants_merged['Efficiency'][
-                unit]
-            found = True
-        if not found:
-            #logging.warning('No fuel price value has been found for fuel ' + Plants_merged['Fuel'][unit] + ' in unit ' + \
-            #             Plants_merged['Unit'][unit] + '. A null variable cost has been assigned')
-            pass
+            if not found:
+                #logging.warning('No fuel price value has been found for fuel ' + Plants_merged['Fuel'][unit] + ' in unit ' + \
+                #             Plants_merged['Unit'][unit] + '. A null variable cost has been assigned')
+                pass
 
     # Alternative Variable Cost
     FuelEntries2 = {'BIO':'PriceOfBiomass 2', 'GAS':'PriceOfGas 2', 'HRD':'PriceOfBlackCoal 2', 'LIG':'PriceOfLignite 2', 'NUC':'PriceOfNuclear 2', 'OIL':'PriceOfCrudeOil 2', 'PEA':'PriceOfPeat 2', 'DSL':'PriceOfDiesel 2', 'HFO':'PriceOfHFO 2', 'MSW':'PriceOfMunicipalSolidWaste 2', 'LFG':'PriceOfLandFillGas 2'}
     for unit in range(Nunits):
         found = False
         zone = Plants_merged['Zone'][unit]
-        for FuelEntry in FuelEntries2:
-            if Plants_merged['Fuel'][unit] == FuelEntry:
-                parameters['CostVariableB']['val'][unit, :] = FuelPrices2[zone][FuelEntries2[FuelEntry]] / Plants_merged['Efficiency'][unit] + \
-                                                             Plants_merged['EmissionRate'][unit] * FuelPrices2[zone]['PriceOfCO2 2']
+        if zone in config['zones']:
+            for FuelEntry in FuelEntries2:
+                if Plants_merged['Fuel'][unit] == FuelEntry:
+                    parameters['CostVariableB']['val'][unit, :] = FuelPrices2[zone][FuelEntries2[FuelEntry]] / Plants_merged['Efficiency'][unit] + \
+                                                                 Plants_merged['EmissionRate'][unit] * FuelPrices2[zone]['PriceOfCO2 2']
+                    found = True
+            # Special case for biomass plants, which are not included in EU ETS:
+            if Plants_merged['Fuel'][unit] == 'BIO':
+                parameters['CostVariableB']['val'][unit, :] = FuelPrices2[zone]['PriceOfBiomass 2'] / Plants_merged['Efficiency'][
+                    unit]
                 found = True
-        # Special case for biomass plants, which are not included in EU ETS:
-        if Plants_merged['Fuel'][unit] == 'BIO':
-            parameters['CostVariableB']['val'][unit, :] = FuelPrices2[zone]['PriceOfBiomass 2'] / Plants_merged['Efficiency'][
-                unit]
-            found = True
-        if not found:
-            #logging.warning('No fuel price value has been found for fuel ' + Plants_merged['Fuel'][unit] + ' in unit ' + \
-            #             Plants_merged['Unit'][unit] + '. A null variable cost has been assigned')
-            pass
+            if not found:
+                #logging.warning('No fuel price value has been found for fuel ' + Plants_merged['Fuel'][unit] + ' in unit ' + \
+                #             Plants_merged['Unit'][unit] + '. A null variable cost has been assigned')
+                pass
 
     # %%#################################################################################################################################################################################################
 
@@ -858,6 +884,17 @@ def build_simulation(config, LocalSubsidyMultiplier=1, ExportCostMultiplier=1):
             fout.close()
         else:
             shutil.copyfile(os.path.join(GMS_FOLDER, 'UCM_h.gms'),
+                            os.path.join(sim, 'UCM_h.gms'))
+    if config['GAMS_ModelCode'] == 'Standard_2':
+        if LP:
+            fin = open(os.path.join(GMS_FOLDER, 'UCM_h_V2.0.gms'))
+            fout = open(os.path.join(sim,'UCM_h.gms'), "wt")
+            for line in fin:
+                fout.write(line.replace('$setglobal LPFormulation 0', '$setglobal LPFormulation 1'))
+            fin.close()
+            fout.close()
+        else:
+            shutil.copyfile(os.path.join(GMS_FOLDER, 'UCM_h_V2.0.gms'),
                             os.path.join(sim, 'UCM_h.gms'))
     elif config['GAMS_ModelCode'] == 'GCC_virtual_connections':
         if LP:

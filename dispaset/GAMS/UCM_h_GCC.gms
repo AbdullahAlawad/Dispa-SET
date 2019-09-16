@@ -110,7 +110,7 @@ EmissionRate(u,p)                [tP\MWh] P emission rate
 FlowMaximum(l,h)                 [MW]     Line limits
 FlowMinimum(l,h)                 [MW]     Minimum flow
 Fuel(u,f)                        [n.a.]   Fuel type {1 0}
-FuelPricePerZone                 *[$\MWh]  Average international & subsidized prices for each fuel in each zone
+FuelPricePerZone        *[$\MWh]  Average international & subsidized prices for each fuel in each zone
 HeatDemand(chp,h)                [MWh\u]  Heat demand profile for chp units
 LineNode(l,n)                    [n.a.]   Incidence matrix {-1 +1}
 LoadShedding(n,h)                [MW]   Load shedding capacity
@@ -276,10 +276,10 @@ $If %LPFormulation% == 1 POSITIVE VARIABLES Committed (u,h) ; Committed.UP(u,h) 
 $If not %LPFormulation% == 1 INTEGER VARIABLES Committed (u,h), StartUp(u,h), ShutDown(u,h) ; Committed.UP(u,h) = Nunits(u) ; StartUp.UP(u,h) = Nunits(u) ; ShutDown.UP(u,h) = Nunits(u) ;
 
 POSITIVE VARIABLES
-CostStartUpH(u,h)          [EUR]   Cost of starting up
-CostShutDownH(u,h)         [EUR]   cost of shutting down
-CostRampUpH(u,h)           [EUR]   Ramping cost
-CostRampDownH(u,h)         [EUR]   Ramping cost
+CostStartUpH(u,h)          [$]   Cost of starting up
+CostShutDownH(u,h)         [$]   cost of shutting down
+CostRampUpH(u,h)           [$]   Ramping cost
+CostRampDownH(u,h)         [$]   Ramping cost
 CurtailedPower(n,h)        [MW]    Curtailed power at node n
 Flow(l,h)                  [MW]    Flow through lines
 Power(u,h)                 [MW]    Power output
@@ -294,7 +294,7 @@ LL_MinPower(n,h)           [MW]    Power exceeding the demand
 LL_2U(n,h)                 [MW]    Deficit in reserve up
 LL_3U(n,h)                 [MW]    Deficit in reserve up - non spinning
 LL_2D(n,h)                 [MW]    Deficit in reserve down
-SystemCost(n,h)              [EUR]   Hourly system cost
+SystemCost(n,h)            [$]   Hourly system cost
 Reserve_2U(u,h)            [MW]    Spinning reserve up
 Reserve_2D(u,h)            [MW]    Spinning reserve down
 Reserve_3U(u,h)            [MW]    Non spinning quick start reserve up

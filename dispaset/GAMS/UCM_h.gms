@@ -89,15 +89,15 @@ CHPMaxHeat(chp)                  [MW\u]     Maximum heat capacity of chp plant
 CHPType
 CommittedInitial(u)              [n.a.]   Initial committment status
 Config
-*CostCurtailment(n,h)             [EUR\MW]  Curtailment costs
-CostFixed(u)                     [EUR\h]    Fixed costs
-CostRampUp(u)                    [EUR\MW\h] Ramp-up costs
-CostRampDown(u)                  [EUR\MW\h] Ramp-down costs
-CostShutDown(u)                  [EUR\u]    Shut-down costs
-CostStartUp(u)                   [EUR\u]    Start-up costs
-CostVariable(u,h)                [EUR\MW]   Variable costs
-CostHeatSlack(chp,h)             [EUR\MWh]  Cost of supplying heat via other means
-CostLoadShedding(n,h)            [EUR\MWh] Cost of load shedding
+*CostCurtailment(n,h)             [$\MW]  Curtailment costs
+CostFixed(u)                     [$\h]    Fixed costs
+CostRampUp(u)                    [$\MW\h] Ramp-up costs
+CostRampDown(u)                  [$\MW\h] Ramp-down costs
+CostShutDown(u)                  [$\u]    Shut-down costs
+CostStartUp(u)                   [$\u]    Start-up costs
+CostVariable(u,h)                [$\MW]   Variable costs
+CostHeatSlack(chp,h)             [$\MWh]  Cost of supplying heat via other means
+CostLoadShedding(n,h)            [$\MWh] Cost of load shedding
 Curtailment(n)                   [n.a]    Curtailment allowed or not {1 0} at node n
 Demand(mk,n,h)                   [MW]     Demand
 Efficiency(u)                    [%]      Efficiency
@@ -110,13 +110,13 @@ HeatDemand(chp,h)                [MWh\u]  Heat demand profile for chp units
 LineNode(l,n)                    [n.a.]   Incidence matrix {-1 +1}
 LoadShedding(n,h)                [MW]   Load shedding capacity
 Location(u,n)                    [n.a.]   Location {1 0}
-Markup(u,h)                      [EUR\MW]   Markup
+Markup(u,h)                      [$\MW]   Markup
 OutageFactor(u,h)                [%]      Outage Factor (100% = full outage)
 PartLoadMin(u)                   [%]      Minimum part load
 PowerCapacity(u)                 [MW\u]     Installed capacity
 PowerInitial(u)                  [MW\u]     Power output before initial period
 PowerMinStable(u)                [MW\u]     Minimum power output
-PriceTransmission(l,h)           [EUR\MWh]  Transmission price
+PriceTransmission(l,h)           [$\MWh]  Transmission price
 StorageChargingCapacity(u)       [MW\u]     Storage capacity
 StorageChargingEfficiency(u)     [%]      Charging efficiency
 StorageSelfDischarge(u)          [%\day]  Self-discharge of the storage units
@@ -145,7 +145,7 @@ QuickStartPower(u,h)            [MW\h\u]   Available max capacity in tertiary re
 
 *Parameters as used within the loop
 PARAMETERS
-CostLoadShedding(n,h)            [EUR\MW]  Value of lost load
+CostLoadShedding(n,h)            [$\MW]  Value of lost load
 LoadMaximum(u,h)                 [%]     Maximum load given AF and OF
 PowerMustRun(u,h)                [MW\u]    Minimum power output
 StorageFinalMin(s)               [MWh]   Minimum storage level at the end of the optimization horizon
@@ -306,10 +306,10 @@ $If %LPFormulation% == 1 POSITIVE VARIABLES Committed (u,h) ; Committed.UP(u,h) 
 $If not %LPFormulation% == 1 INTEGER VARIABLES Committed (u,h), StartUp(u,h), ShutDown(u,h) ; Committed.UP(u,h) = Nunits(u) ; StartUp.UP(u,h) = Nunits(u) ; ShutDown.UP(u,h) = Nunits(u) ;
 
 POSITIVE VARIABLES
-CostStartUpH(u,h)          [EUR]   Cost of starting up
-CostShutDownH(u,h)         [EUR]   cost of shutting down
-CostRampUpH(u,h)           [EUR]   Ramping cost
-CostRampDownH(u,h)         [EUR]   Ramping cost
+CostStartUpH(u,h)          [$]   Cost of starting up
+CostShutDownH(u,h)         [$]   cost of shutting down
+CostRampUpH(u,h)           [$]   Ramping cost
+CostRampDownH(u,h)         [$]   Ramping cost
 CurtailedPower(n,h)        [MW]    Curtailed power at node n
 Flow(l,h)                  [MW]    Flow through lines
 Power(u,h)                 [MW]    Power output
@@ -326,7 +326,7 @@ LL_2U(n,h)                 [MW]    Deficit in reserve up
 LL_3U(n,h)                 [MW]    Deficit in reserve up - non spinning
 LL_2D(n,h)                 [MW]    Deficit in reserve down
 spillage(s,h)              [MWh]   spillage from water reservoirs
-SystemCost(h)              [EUR]   Hourly system cost
+SystemCost(h)              [$]   Hourly system cost
 Reserve_2U(u,h)            [MW]    Spinning reserve up
 Reserve_2D(u,h)            [MW]    Spinning reserve down
 Reserve_3U(u,h)            [MW]    Non spinning quick start reserve up
@@ -336,7 +336,7 @@ WaterSlack(s)              [MWh]   Unsatisfied water level constraint
 ;
 
 free variable
-SystemCostD                ![EUR]   Total system cost for one optimization period
+SystemCostD                ![$]   Total system cost for one optimization period
 ;
 
 *===============================================================================

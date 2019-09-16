@@ -59,6 +59,7 @@ def NodeBasedTable(path,idx,zones,tablename='',default=None):
             if key in tmp:
                 data[key] = tmp[key]
             elif len(tmp.columns) == 1:    # if the country code is not in the header, it can also be because it is a single country simulation and no header is needed:
+                tmp = load_csv(paths['all'], index_col=0, header=None, parse_dates=True)
                 data[key] = tmp.iloc[:,0]
             else:
                 logging.error('Country ' + key + ' could not be found in the file ' + path + '. Using default value ' + str(default))
@@ -73,7 +74,7 @@ def NodeBasedTable(path,idx,zones,tablename='',default=None):
         for c in paths:
             path = paths[c]
             # In case of separated files for each country, there is no header
-            tmp = load_csv(path, index_col=0, parse_dates=True)
+            tmp = load_csv(path, index_col=0, header=None, parse_dates=True)
             # check that the loaded file is ok:
             if not tmp.index.is_unique:
                 logging.error('The index of data file ' + paths['all'] + ' is not unique. Please check the data')

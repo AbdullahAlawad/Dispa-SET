@@ -1,0 +1,13 @@
+future
+click
+pandas
+numpy
+scipy
+matplotlib
+xlrd
+pyyaml
+pytest
+gdx
+gdxcc
+gamsxcc
+optcc
